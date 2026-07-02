@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Docker
+.docker/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Config (generated)
+config/*.json
+config/torrc
+config/torrc_base
+!config/torrc.default
+!config/torrc_base.default
+
+# Build
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# Playwright
+.playwright-mcp/

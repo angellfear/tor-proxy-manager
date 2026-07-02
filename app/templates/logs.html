@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4"><i class="bi-journal-text me-2"></i>Logs</h2>
+<div class="card"><div class="card-body">
+<div class="d-flex justify-content-between mb-3">
+<div class="input-group w-auto"><input type="text" id="log-search" class="form-control" placeholder="Search..."><button class="btn btn-outline-secondary" onclick="searchLogs()"><i class="bi-search"></i></button></div>
+<div class="btn-group"><button id="log-toggle" class="btn btn-success" onclick="togglePause()"><i class="bi-pause-fill me-1"></i>Pause</button><a href="/logs/download" class="btn btn-info"><i class="bi-download me-1"></i>Download</a><button class="btn btn-secondary" onclick="clearLogs()"><i class="bi-trash me-1"></i>Clear</button></div>
+</div>
+<pre id="log-output" class="bg-dark text-light p-3 rounded" style="height:500px;overflow-y:auto;font-size:0.8rem;white-space:pre-wrap"></pre>
+</div></div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/logs.js') }}"></script>{% endblock %}

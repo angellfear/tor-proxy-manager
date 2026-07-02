@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4"><i class="bi-gear me-2"></i>Configuration</h2>
+
+<!-- HTTP Proxy -->
+<div class="card mb-3"><div class="card-body">
+<h5 class="card-title"><i class="bi-globe me-1"></i>HTTP Proxy (Privoxy)</h5>
+<div class="form-check form-switch mb-2">
+<input class="form-check-input" type="checkbox" id="httpProxyToggle"
+  {% if settings.http_proxy_enabled %}checked{% endif %}>
+<label class="form-check-label" for="httpProxyToggle">HTTP Proxy</label>
+</div>
+<div id="httpProxyPortGroup" class="row{% if not settings.http_proxy_enabled %} d-none{% endif %}">
+<div class="col-md-4"><label class="form-label">Port</label>
+<input type="number" id="httpProxyPort" class="form-control" value="{{ settings.http_port }}" min="1" max="65535"></div>
+</div>
+</div></div>
+
+<!-- Authentication -->
+<div class="card mb-3"><div class="card-body">
+<h5 class="card-title"><i class="bi-lock me-1"></i>Authentication</h5>
+<form method="POST" action="/config/apply_auth">
+<div class="form-check form-switch mb-2">
+<input class="form-check-input" type="checkbox" name="require_auth" id="requireAuth"
+  {% if settings.require_auth %}checked{% endif %}>
+<label class="form-check-label" for="requireAuth">Require Authentication</label>
+</div>
+<div id="authFields" class="row{% if not settings.require_auth %} d-none{% endif %}">
+<div class="col-md-4 mb-2"><label class="form-label">Username</label>
+<input type="text" name="username" class="form-control" value="{{ current_user or 'admin' }}"></div>
+<div class="col-md-4 mb-2"><label class="form-label">Password</label>
+<input type="password" name="password" class="form-control" minlength="6"></div>
+<div class="col-md-4 mb-2 d-flex align-items-end">
+<button type="submit" class="btn btn-primary w-100"><i class="bi-check-lg me-1"></i>Apply</button>
+</div>
+</div>
+</form>
+</div></div>
+
+<!-- Log Level -->
+<div class="card mb-3"><div class="card-body">
+<h5 class="card-title"><i class="bi-bar-chart me-1"></i>Tor Log Level</h5>
+<div class="row"><div class="col-md-4">
+<select id="logLevelSelect" class="form-select">
+{% for lvl in ['debug','info','notice','warn','error'] %}
+<option value="{{ lvl }}" {% if settings.log_level == lvl %}selected{% endif %}>{{ lvl|capitalize }}</option>
+{% endfor %}
+</select>
+</div></div>
+</div></div>
+{% endblock %}
+{% block scripts %}
+<script>
+// HTTP Proxy toggle + port
+const httpToggle = document.getElementById('httpProxyToggle');
+const httpPort = document.getElementById('httpProxyPort');
+const httpPortGroup = document.getElementById('httpProxyPortGroup');
+let proxyTimer;
+
+function saveHttpProxy() {
+  clearTimeout(proxyTimer);
+  proxyTimer = setTimeout(() => {
+    fetch('/config/toggle_http_proxy', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({enabled: httpToggle.checked, port: parseInt(httpPort.value) || 8118})
+    }).then(r => r.json()).then(d => {
+      if (d.status === 'ok') showToast('HTTP Proxy ' + (httpToggle.checked ? 'enabled' : 'disabled'), 'success');
+      else showToast('Failed to toggle HTTP Proxy', 'danger');
+    });
+  }, 300);
+}
+
+httpToggle.addEventListener('change', () => {
+  httpPortGroup.classList.toggle('d-none', !httpToggle.checked);
+  saveHttpProxy();
+});
+httpPort.addEventListener('change', saveHttpProxy);
+
+// Auth toggle show/hide fields
+document.getElementById('requireAuth').addEventListener('change', function() {
+  document.getElementById('authFields').classList.toggle('d-none', !this.checked);
+});
+
+// Log Level auto-save
+document.getElementById('logLevelSelect').addEventListener('change', function() {
+  fetch('/config/set_log_level', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({log_level: this.value})
+  }).then(r => r.json()).then(d => {
+    if (d.status === 'ok') showToast('Log level changed to ' + this.value, 'success');
+    else showToast('Failed to change log level', 'danger');
+  });
+});
+</script>
+{% endblock %}

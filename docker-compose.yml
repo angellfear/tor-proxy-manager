@@ -1,0 +1,26 @@
+services:
+  tor-proxy-manager:
+    build: .
+    container_name: tor-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+      - "9050:9050"
+      - "8118:8118"
+      - "9051:9051"
+      - "9053:9053"
+    volumes:
+      - ./config:/config
+      - tor_data:/var/lib/tor
+      - tor_logs:/var/log/tor
+    environment:
+      - TZ=UTC
+    cap_add:
+      - NET_ADMIN
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+
+volumes:
+  tor_data:
+  tor_logs:

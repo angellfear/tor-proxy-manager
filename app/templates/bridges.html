@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4"><i class="bi-link-45deg me-2"></i>Bridges</h2>
+<div class="card"><div class="card-body">
+<p class="text-muted">Paste bridge lines from BridgeDB. One per line.</p>
+<form method="POST" action="/bridges/save">
+<div class="mb-3"><textarea name="bridges" class="form-control font-monospace" rows="12" placeholder="obfs4 1.2.3.4:443 ...">{% if bridges %}{{ bridges }}{% endif %}</textarea></div>
+<button type="submit" class="btn btn-primary"><i class="bi-save me-1"></i>Save Bridges</button>
+</form>
+<hr>
+<h6>Supported formats:</h6>
+<ul class="text-muted small"><li><code>obfs4 IP:PORT CERT ...</code></li><li><code>webtunnel HOST:PORT</code></li><li><code>snowflake</code></li><li>"Bridge" keyword added automatically.</li></ul>
+</div></div>
+{% endblock %}

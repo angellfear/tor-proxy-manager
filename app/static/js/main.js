@@ -1,0 +1,1 @@
+function showToast(message,type){const t=document.createElement('div');t.className='alert alert-'+type+' alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';t.style.zIndex='9999';t.innerHTML=message+'<button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\"></button>';document.body.appendChild(t);setTimeout(()=>t.remove(),3000)}

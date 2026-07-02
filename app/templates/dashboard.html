@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4"><i class="bi-speedometer2 me-2"></i>Dashboard</h2>
+<div class="row" id="status-cards">
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">Tor Status</h6><h4 id="tor-status"><span class="spinner-border spinner-border-sm"></span></h4></div></div></div>
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">Exit IP</h6><h4 id="exit-ip">--</h4></div></div></div>
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">Country</h6><h4 id="exit-country">--</h4></div></div></div>
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">Transport</h6><h4 id="transport">--</h4></div></div></div>
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">Tor Version</h6><h5 id="tor-version">--</h5></div></div></div>
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">Uptime</h6><h5 id="uptime">--</h5></div></div></div>
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">Bootstrapped</h6><h5 id="bootstrap">--</h5></div></div></div>
+  <div class="col-md-3 mb-3"><div class="card"><div class="card-body"><h6 class="card-subtitle mb-2 text-muted">Active Circuits</h6><h5 id="circuits">--</h5></div></div></div>
+</div>
+<div class="card mb-4"><div class="card-body"><h5 class="card-title">Actions</h5><div class="btn-group flex-wrap gap-2"><button class="btn btn-warning" onclick="action('restart')"><i class="bi-arrow-repeat me-1"></i>Restart Tor</button><button class="btn btn-info" onclick="action('reload')"><i class="bi-arrow-clockwise me-1"></i>Reload Config</button><button class="btn btn-success" onclick="action('newnym')"><i class="bi-shuffle me-1"></i>NEWNYM</button><button class="btn btn-secondary" onclick="window.location.href='/logs'"><i class="bi-journal-text me-1"></i>View Logs</button></div></div></div>
+<div class="card"><div class="card-body"><h5 class="card-title">System Info</h5><div id="system-info" class="row"><div class="col-md-6"><strong>SOCKS Port:</strong> <span id="socks-port">9050</span></div><div class="col-md-6"><strong>HTTP Port:</strong> <span id="http-port">8118</span></div><div class="col-md-6"><strong>Control Port:</strong> <span id="control-port">9051</span></div><div class="col-md-6"><strong>DNS Port:</strong> <span id="dns-port">9053</span></div></div></div></div>
+<div class="card mt-4"><div class="card-body"><h5 class="card-title d-flex justify-content-between"><span><i class="bi-journal-text me-1"></i>Recent Logs</span><small class="text-muted fw-normal" style="font-size:0.7rem">last 20 lines · auto-refresh</small></h5><pre id="dashboard-log" class="bg-dark text-light p-2 rounded" style="height:180px;overflow-y:auto;font-size:0.75rem;white-space:pre-wrap;margin-bottom:0"></pre></div></div>
+{% endblock %}
+{% block scripts %}
+<script>
+let logInterval;
+function action(type){const a={restart:'/api/restart',reload:'/api/reload',newnym:'/api/newnym'};fetch(a[type],{method:'POST'}).then(r=>r.json()).then(d=>{if(d.status==='ok')showToast('Done','success');else showToast('Failed','danger')})}
+function updateStatus(){fetch('/api/status').then(r=>r.json()).then(d=>{document.getElementById('tor-status').innerHTML=d.running&&d.bootstrapped?'<span class=\"text-success\"><i class=\"bi-check-circle-fill\"></i> Running</span>':'<span class=\"text-warning\"><i class=\"bi-exclamation-triangle-fill\"></i> '+(d.bootstrap_percent||0)+'%</span>';document.getElementById('exit-ip').textContent=d.exit_ip||'--';document.getElementById('exit-country').textContent=d.country||'--';document.getElementById('transport').textContent=d.transport||'none';document.getElementById('tor-version').textContent=d.tor_version||'--';document.getElementById('circuits').textContent=d.circuits??'--';document.getElementById('bootstrap').textContent=(d.bootstrap_percent||0)+'%';if(d.uptime){const h=Math.floor(d.uptime/3600),m=Math.floor((d.uptime%3600)/60);document.getElementById('uptime').textContent=h+'h '+m+'m'}})}
+function updateConfig(){fetch('/api/config').then(r=>r.json()).then(d=>{document.getElementById('socks-port').textContent=d.socks_port;document.getElementById('http-port').textContent=d.http_port;document.getElementById('control-port').textContent=d.control_port;document.getElementById('dns-port').textContent=d.dns_port})}
+function updateLog(){fetch('/api/log?lines=20').then(r=>r.json()).then(d=>{const el=document.getElementById('dashboard-log');el.textContent=d.log||'No logs';el.scrollTop=el.scrollHeight})}
+setInterval(updateStatus,3000);updateStatus();updateConfig();updateLog();logInterval=setInterval(updateLog,5000)
+</script>
+{% endblock %}
