@@ -10,9 +10,7 @@ def validate_bridge_line(line):
     if not line or line.startswith('#'): return True
     return any(p.match(line) for p in BRIDGE_PATTERNS)
 def normalize_bridge_line(line):
-    line = line.strip()
-    if not line or line.startswith('#'): return line
-    return line if line.startswith('Bridge ') else 'Bridge ' + line
+    return line.strip()
 def validate_torrc(content):
     errors = []
     for i, line in enumerate(content.split('\n'), 1):

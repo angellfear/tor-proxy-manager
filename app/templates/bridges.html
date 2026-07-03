@@ -9,6 +9,61 @@
 </form>
 <hr>
 <h6>Supported formats:</h6>
-<ul class="text-muted small"><li><code>obfs4 IP:PORT CERT ...</code></li><li><code>webtunnel HOST:PORT</code></li><li><code>snowflake</code></li><li>"Bridge" keyword added automatically.</li></ul>
+<ul class="text-muted small"><li><code>obfs4 IP:PORT CERT ...</code></li><li><code>webtunnel HOST:PORT</code></li><li><code>snowflake</code></li></ul>
 </div></div>
+
+<div class="card mt-4"><div class="card-body">
+<h5 class="card-title"><i class="bi-exclamation-triangle me-1"></i>Broken Bridges</h5>
+<p class="text-muted small">Bridges with connectivity issues detected in Tor logs.</p>
+<textarea id="broken-bridges" class="form-control font-monospace" rows="6" readonly placeholder="Checking..." style="background:#1a1a2e;color:#e05252"></textarea>
+<div class="mt-2">
+<button id="check-broken-btn" class="btn btn-outline-danger btn-sm" onclick="checkBroken()"><i class="bi-search me-1"></i>Check</button>
+<button id="remove-broken-btn" class="btn btn-danger btn-sm" onclick="removeBroken()" disabled><i class="bi-trash me-1"></i>Remove Broken</button>
+</div>
+</div></div>
+{% endblock %}
+{% block scripts %}
+<script>
+function checkBroken(){
+  const btn=document.getElementById('check-broken-btn');
+  const ta=document.getElementById('broken-bridges');
+  const rb=document.getElementById('remove-broken-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner-border spinner-border-sm me-1"></span>Checking...';
+  ta.value='Checking bridge health...';
+  fetch('/bridges/broken').then(r=>r.json()).then(d=>{
+    if(d.broken&&d.broken.length>0){
+      ta.value=d.broken.join('\n');
+      rb.disabled=false
+    } else {
+      ta.value='No broken bridges detected.';
+      rb.disabled=true
+    }
+  }).catch(()=>{
+    ta.value='Failed to check bridge health.';
+    rb.disabled=true
+  }).finally(()=>{
+    btn.disabled=false; btn.innerHTML='<i class="bi-search me-1"></i>Check'
+  })
+}
+function removeBroken(){
+  if(!confirm('Remove all broken bridges from the list?'))return;
+  const btn=document.getElementById('remove-broken-btn');
+  const ta=document.getElementById('broken-bridges');
+  btn.disabled=true; btn.innerHTML='<span class="spinner-border spinner-border-sm me-1"></span>Removing...';
+  fetch('/bridges/remove_broken',{method:'POST'}).then(r=>r.json()).then(d=>{
+    if(d.status==='ok'){
+      ta.value=d.remaining>0?'Broken bridges removed ('+d.removed+' removed, '+d.remaining+' remaining).':'All bridges were broken. None remaining.';
+      document.querySelector('textarea[name="bridges"]').value='';
+      if(d.remaining>0) fetch('/bridges/broken').then(r=>r.json()).then(d2=>{
+        const all=document.querySelector('textarea[name="bridges"]');
+        if(d2.working) all.value=d2.working.join('\n')
+      })
+    }
+  }).catch(()=>{
+    ta.value='Failed to remove broken bridges.'
+  }).finally(()=>{
+    btn.disabled=false; btn.innerHTML='<i class="bi-trash me-1"></i>Remove Broken'
+  })
+}
+</script>
 {% endblock %}

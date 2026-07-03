@@ -108,8 +108,8 @@ def restart_tor():
             try: _controller.close()
             except: pass
             _controller = None
-        subprocess.run(['supervisorctl', 'restart', 'tor'], timeout=10)
-        return True
+        r = subprocess.run(['supervisorctl', 'restart', 'tor'], timeout=10, capture_output=True)
+        return r.returncode == 0
     except: return False
 def get_logs(lines=100):
     logfile = '/var/log/tor/notices.log'

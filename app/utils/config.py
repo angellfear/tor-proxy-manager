@@ -61,8 +61,7 @@ def generate_torrc(settings):
         for bline in bridges.strip().split('\n'):
             bline = bline.strip()
             if bline and not bline.startswith('#'):
-                prefix = 'Bridge ' if not bline.startswith('Bridge ') else ''
-                parts.append(f'{prefix}{bline}')
+                parts.append(f'Bridge {bline}')
     parts.append('')
     content = '\n'.join(parts)
     save_torrc(content)

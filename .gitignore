@@ -40,3 +40,4 @@ build/
 
 # Playwright
 .playwright-mcp/
+AGENTS.md

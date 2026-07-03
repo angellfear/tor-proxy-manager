@@ -20,6 +20,8 @@ def stream_logs():
             try:
                 if os.path.exists(logfile):
                     current_size = os.path.getsize(logfile)
+                    if current_size < last_size:
+                        last_size = 0
                     if current_size > last_size:
                         with open(logfile) as f:
                             f.seek(last_size)
